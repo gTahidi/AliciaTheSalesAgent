@@ -9,13 +9,16 @@ import rehypeRaw from 'rehype-raw';
 
 import { PostHog } from 'posthog-node'
 
-const client = new PostHog(
-  `${process.env.NEXT_PUBLIC_POSTHOG_ID}`,    
-  { host: 'https://app.posthog.com',
-    disableGeoip: false, 
-    requestTimeout: 30000
-  }
-)
+let client: PostHog | undefined;
+if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
+  client = new PostHog(
+    `${process.env.NEXT_PUBLIC_POSTHOG_ID}`,    
+    { host: 'https://app.posthog.com',
+      disableGeoip: false, 
+      requestTimeout: 30000
+    }
+  );
+}
 
 type Message = {
   id: string;
@@ -72,7 +75,7 @@ export function ChatInterface() {
   useEffect(() => {
     // This function will be called on resize events
     const handleResize = () => {
-      setMaxHeight(`${window.innerHeight}-200px`);
+      setMaxHeight(`${window.innerHeight - 200}px`);
     };
   
     // Set the initial value when the component mounts
@@ -86,30 +89,40 @@ export function ChatInterface() {
   }, []);
   
   useEffect(() => {
+    
     // Function to fetch the bot name
     const fetchBotName = async () => {
-      // console.log("REACT_APP_API_URL:", process.env.NEXT_PUBLIC_API_URL); // Added console logging for debugging
-      client.capture({
-        distinctId: session_id,
-        event: 'fetched-bot-name',
-        properties: {
-          $current_url: window.location.href,
-        },
-    })
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/botname`, {
-          method: 'GET', // Method is optional since GET is the default value
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AUTH_KEY}`
+      if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production" && client) {
+        client.capture({
+          distinctId: session_id,
+          event: 'fetched-bot-name',
+          properties: {
+            $current_url: window.location.href,
           },
         });
+      }
+
+      try {
+        let response;
+        const headers: Record<string, string> = {};
+        if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
+          console.log('Authorization Key:', process.env.NEXT_PUBLIC_AUTH_KEY); // Add this line
+          headers['Authorization'] = `Bearer ${process.env.NEXT_PUBLIC_AUTH_KEY}`;
+          response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/botname`, {
+            headers: headers,
+          });
+          
+        } else {
+          response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/botname`);
+        }
+
         if (!response.ok) {
           throw new Error(`Network response was not ok: ${response.statusText}`);
         }
-  
+
         const data = await response.json();
         setBotName(data.name); // Save the bot name in the state
-        console.log(botName)
+        console.log(botName);
       } catch (error) {
         console.error("Failed to fetch the bot's name:", error);
       }
@@ -117,7 +130,7 @@ export function ChatInterface() {
 
     // Call the function to fetch the bot name
     fetchBotName();
-  }, []); // Empty dependency array means it runs once on mount
+  }, [botName, session_id]); // Include botName and session_id in the dependency array
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -132,14 +145,24 @@ export function ChatInterface() {
     setInputValue('');
   };
 
+  useEffect(() => {
+    console.log('NEXT_PUBLIC_AUTH_KEY:', process.env.NEXT_PUBLIC_AUTH_KEY);
+    console.log('NEXT_PUBLIC_ENVIRONMENT:', process.env.NEXT_PUBLIC_ENVIRONMENT);
+    console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+  }, []);
+  
+
   const handleBotResponse = async (userMessage: string) => {
-    client.capture({
-      distinctId: session_id,
-      event: 'sent-message',
-      properties: {
-        $current_url: window.location.href,
-      },
-  })
+    if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production" && client) {
+      client.capture({
+        distinctId: session_id,
+        event: 'sent-message',
+        properties: {
+          $current_url: window.location.href,
+        },
+      });
+    }
+
     const requestData = {
       session_id,
       human_say: userMessage,
@@ -148,12 +171,18 @@ export function ChatInterface() {
     setIsBotTyping(true); // Start showing the typing indicator
 
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
+        console.log('Authorization Key:', process.env.NEXT_PUBLIC_AUTH_KEY); // Add this line
+        headers['Authorization'] = `Bearer ${process.env.NEXT_PUBLIC_AUTH_KEY}`;
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AUTH_KEY}`
-        },
+        headers: headers,
         body: JSON.stringify(requestData),
       });
   
@@ -164,30 +193,29 @@ export function ChatInterface() {
       if (stream) {
         {/*Not implemented*/}
       } else {
-        if (!stream) {
-          const data = await response.json();
-          console.log('Bot response:', data);
-          setBotName(data.bot_name); // Update bot name based on response
-          setConversationalStage(data.conversational_stage);
-          // Update the thinkingProcess state with new fields from the response
-          setThinkingProcess(prevProcess => [...prevProcess, {
-            conversationalStage: data.conversational_stage,
-            tool: data.tool,
-            toolInput: data.tool_input,
-            actionOutput: data.action_output,
-            actionInput: data.action_input
-          }]);
-          const botMessageText = `${data.response}`;
-          const botMessage: Message = { id: uuidv4(), text: botMessageText, sender: 'bot' };
-          setBotMessageIndex(botMessageIndex + 1);
-          setMessages((prevMessages) => [...prevMessages, botMessage]);
-        }}
-      } catch (error) {
-        console.error("Failed to fetch bot's response:", error);
-      } finally {
-        setIsBotTyping(false); // Stop showing the typing indicator
-        setBotHasResponded(true);
+        const data = await response.json();
+        console.log('Bot response:', data);
+        setBotName(data.bot_name); // Update bot name based on response
+        setConversationalStage(data.conversational_stage);
+        // Update the thinkingProcess state with new fields from the response
+        setThinkingProcess(prevProcess => [...prevProcess, {
+          conversationalStage: data.conversational_stage,
+          tool: data.tool,
+          toolInput: data.tool_input,
+          actionOutput: data.action_output,
+          actionInput: data.action_input
+        }]);
+        const botMessageText = `${data.response}`;
+        const botMessage: Message = { id: uuidv4(), text: botMessageText, sender: 'bot' };
+        setBotMessageIndex(botMessageIndex + 1);
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
       }
+    } catch (error) {
+      console.error("Failed to fetch bot's response:", error);
+    } finally {
+      setIsBotTyping(false); // Stop showing the typing indicator
+      setBotHasResponded(true);
+    }
   };  
   return (
     <div key="1" className="flex flex-col " style={{ height: '89vh' }}>
@@ -223,7 +251,7 @@ export function ChatInterface() {
           />
           <span className={`text-frame p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900`}>
           <ReactMarkdown rehypePlugins={[rehypeRaw]} components={{
-            a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:text-blue-700" />
+            a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700" />
           }}>
             {message.text}
           </ReactMarkdown>
@@ -299,4 +327,3 @@ export function ChatInterface() {
     </div>
   );
 }
-
