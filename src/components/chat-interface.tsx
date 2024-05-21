@@ -130,6 +130,7 @@ export function ChatInterface() {
 
     // Call the function to fetch the bot name
     fetchBotName();
+    console.log('Calling endpoint:',process.env.NEXT_PUBLIC_API_URL)
   }, [botName, session_id]); // Include botName and session_id in the dependency array
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
