@@ -4,9 +4,6 @@ FROM python:3.11.8-alpine
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies necessary for your environment
-RUN apk add --no-cache gcc musl-dev linux-headers libffi-dev
-
 # Upgrade pip to the latest version before installing any dependencies
 RUN pip install --upgrade pip
 
