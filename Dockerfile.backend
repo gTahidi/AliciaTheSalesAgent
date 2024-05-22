@@ -1,31 +1,23 @@
-# Use an official lightweight Python image.
-# alpine is used here for its smaller footprint compared to Debian-based images.
-FROM python:3.11.8-alpine
+# Use an official Python runtime as a parent image
+FROM python:3.11.8-bookworm
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-# This step includes installation of gcc and other dependencies,
-# which are required for Python packages that need compiling.
-RUN apk add --no-cache gcc musl-dev linux-headers
-
-# Install Python dependencies in a separate layer
-# Copy only the requirements file to cache the dependencies installation
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . /app
+RUN pip install -r requirements.txt
 
-# Set environment variables
-ENV MODULE_NAME="run_api"
-ENV VARIABLE_NAME="app"
-ENV PORT=8000
-
-# Inform Docker that the container listens on the specified port at runtime.
+# Make port 8000 available to the world outside this container
 EXPOSE 8000
 
-# Use gunicorn as the entry point to manage the application server
-# Adjust the number of workers and threads based on your application's requirements and available resources
-CMD ["gunicorn", "run_api:app", "--workers=4", "--worker-class=uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Define environment variable
+ENV MODULE_NAME="run_api"
+ENV VARIABLE_NAME="app"
+ENV PORT="8000"
+
+# Run FastAPI server when the container launches
+CMD ["uvicorn", "run_api:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
