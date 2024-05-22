@@ -1,3 +1,24 @@
-curl -X GET http://localhost:8000/botname
-#TODO
-Change NEXT_PUBLIC_URL to: http://backend:8000
+
+#Testing the Server on different calls
+curl -X POST "http://localhost:8000/chat?stream=true" -H "Content-Type: application/json" -d '{
+  "session_id": "your-session-id",
+  "human_say": "Hello, I need help with a product."
+}'
+
+
+curl -X GET "http://localhost:8000/botname"
+
+
+curl -X GET "http://localhost:8000/"
+
+
+Running files using poetry for Testing
+
+
+curl -X POST http://localhost:8000/chat \
+     -H "Content-Type: application/json" \
+     -d '{
+           "session_id": "session1",
+           "human_say": "Hello, Wo are you and what is ypur company name."
+         }'
+>>>>>>> 996afcd7071a75141791191656affa4b2df08218

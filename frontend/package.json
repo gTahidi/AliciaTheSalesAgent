@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bash start-dev.sh",
+    "dev": "nodemon --watch pages --watch components --exec \"next dev\"",
     "vercel-dev": "nodemon --watch pages --watch components --exec \"next dev\"",
     "build": "next build",
     "start": "next start",
@@ -12,6 +12,7 @@
   "dependencies": {
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "dotenv": "^16.4.5",
     "lucide-react": "^0.340.0",
     "next": "^14.1.1",
     "posthog-node": "^4.0.0",
