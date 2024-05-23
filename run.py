@@ -11,8 +11,6 @@ from salesgpt.agents import SalesGPT
 # Use a raw string or double backslashes for Windows paths
 load_dotenv(r'C:\Users\Briankechy\sales\AliciaTheSalesAgent\.env')  
 
-# Print the API key to check if it's loading correctly (make sure to only do this in a secure, development environment)
-print(os.getenv('OPENAI_API_KEY'))
 # Suppress warnings
 warnings.filterwarnings("ignore")
 
@@ -52,7 +50,7 @@ if __name__ == "__main__":
     verbose = args.verbose
     max_num_turns = args.max_num_turns
 
-    llm = ChatLiteLLM(temperature=0.2, model_name="gpt-4-turbo-2024-04-09")
+    llm = ChatLiteLLM(temperature=0.2, model_name="gpt-3.5-turbo-0613")
 
     if config_path == "":
         print("No agent config specified, using a standard config")
