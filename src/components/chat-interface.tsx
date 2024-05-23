@@ -9,16 +9,7 @@ import rehypeRaw from 'rehype-raw';
 
 import { PostHog } from 'posthog-node'
 
-let client: PostHog | undefined;
-if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
-  client = new PostHog(
-    `${process.env.NEXT_PUBLIC_POSTHOG_ID}`,    
-    { host: 'https://app.posthog.com',
-      disableGeoip: false, 
-      requestTimeout: 30000
-    }
-  );
-}
+
 
 type Message = {
   id: string;
@@ -92,7 +83,7 @@ export function ChatInterface() {
     
     // Function to fetch the bot name
     const fetchBotName = async () => {
-      if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production" && client) {
+      if (process.env.ENVIRONMENT === "production" && client) {
         client.capture({
           distinctId: session_id,
           event: 'fetched-bot-name',
@@ -105,15 +96,15 @@ export function ChatInterface() {
       try {
         let response;
         const headers: Record<string, string> = {};
-        if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
-          console.log('Authorization Key:', process.env.NEXT_PUBLIC_AUTH_KEY); // Add this line
-          headers['Authorization'] = `Bearer ${process.env.NEXT_PUBLIC_AUTH_KEY}`;
-          response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/botname`, {
+        if (process.env.ENVIRONMENT === "production") {
+          console.log('Authorization Key:', process.env.AUTH_KEY); // Add this line
+          headers['Authorization'] = `Bearer ${process.env.AUTH_KEY}`;
+          response = await fetch(`${process.env.API_URL}/botname`, {
             headers: headers,
           });
           
         } else {
-          response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/botname`);
+          response = await fetch(`${process.env.API_URL}/botname`);
         }
 
         if (!response.ok) {
@@ -130,7 +121,7 @@ export function ChatInterface() {
 
     // Call the function to fetch the bot name
     fetchBotName();
-    console.log('Calling endpoint:',process.env.NEXT_PUBLIC_API_URL)
+    console.log('Calling endpoint:',process.env.API_URL)
   }, [botName, session_id]); // Include botName and session_id in the dependency array
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,14 +138,14 @@ export function ChatInterface() {
   };
 
   useEffect(() => {
-    console.log('NEXT_PUBLIC_AUTH_KEY:', process.env.NEXT_PUBLIC_AUTH_KEY);
-    console.log('NEXT_PUBLIC_ENVIRONMENT:', process.env.NEXT_PUBLIC_ENVIRONMENT);
-    console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('NEXT_PUBLIC_AUTH_KEY:', process.env.AUTH_KEY);
+    console.log('NEXT_PUBLIC_ENVIRONMENT:', process.env.ENVIRONMENT);
+    console.log('NEXT_PUBLIC_API_URL:', process.env.API_URL);
   }, []);
   
 
   const handleBotResponse = async (userMessage: string) => {
-    if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production" && client) {
+    if (process.env.ENVIRONMENT === "production" && client) {
       client.capture({
         distinctId: session_id,
         event: 'sent-message',
@@ -176,12 +167,12 @@ export function ChatInterface() {
         'Content-Type': 'application/json'
       };
 
-      if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
-        console.log('Authorization Key:', process.env.NEXT_PUBLIC_AUTH_KEY); // Add this line
-        headers['Authorization'] = `Bearer ${process.env.NEXT_PUBLIC_AUTH_KEY}`;
+      if (process.env.ENVIRONMENT === "production") {
+        console.log('Authorization Key:', process.env.AUTH_KEY); // Add this line
+        headers['Authorization'] = `Bearer ${process.env.AUTH_KEY}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      const response = await fetch(`${process.env.API_URL}/chat`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(requestData),
