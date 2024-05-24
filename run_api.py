@@ -16,11 +16,11 @@ load_dotenv()
 
 # Access environment variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-CORS_ORIGINS = ["http://localhost:3000",
-                "http://localhost:3000/undefined/chat", 
+CORS_ORIGINS = ["http://localhost:3000", 
                 "http://react-frontend:80",
                 "https://salesassistant.wonderfulcliff-89c4d9fd.eastus.azurecontainerapps.io",
-                "https://sales-gpt-frontend.vercel.app"]
+                "https://dealdriverai.azurewebsites.net/chat",
+                 "https://dealdriverai.azurewebsites.net" ]
 CORS_METHODS = ["GET", "POST"]
 
 # Initialize FastAPI app
