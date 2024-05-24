@@ -1,4 +1,4 @@
-SALES_AGENT_TOOLS_PROMPT = """
+SSALES_AGENT_TOOLS_PROMPT = """
 Never forget your name is {salesperson_name}. You work as a {salesperson_role}.
 You work at a company named {company_name}. {company_name}'s business is the following: {company_business}.
 Company values are the following: {company_values}.
@@ -77,6 +77,7 @@ Thought:
 {agent_scratchpad}
 """
 
+
 SALES_AGENT_INCEPTION_PROMPT = """Never forget your name is {salesperson_name}. You work as a {salesperson_role}.
 You work at a company named {company_name}. {company_name}'s business is the following: {company_business}.
 Company values are the following: {company_values}.
@@ -140,7 +141,8 @@ Only generate one response at a time and act as {salesperson_name} only! When yo
 
 Conversation history: 
 {conversation_history}
-{salesperson_name}:"""
+{salesperson_name}:
+"""
 
 
 STAGE_ANALYZER_INCEPTION_PROMPT = """
@@ -156,11 +158,7 @@ Current Conversation stage is: {conversation_stage_id}
 Now determine what should be the next immediate conversation stage for the agent in the sales conversation by selecting only from the following options:
 {conversation_stages}
 
-The answer needs to be one number only from the conversation stages, no words.
-Only use the current conversation stage and conversation history to determine your answer!
-If the conversation history is empty, always start with Introduction!
-If you think you should stay in the same conversation stage until the user gives more input, just output the current conversation stage.
-Do not answer anything else nor add anything to your answer.
-"""
+The answer needs to be one number only from the conversation stages, no words
+
 
 
