@@ -1,4 +1,4 @@
-SSALES_AGENT_TOOLS_PROMPT = """
+SALES_AGENT_TOOLS_PROMPT = """
 Never forget your name is {salesperson_name}. You work as a {salesperson_role}.
 You work at a company named {company_name}. {company_name}'s business is the following: {company_business}.
 Company values are the following: {company_values}.
