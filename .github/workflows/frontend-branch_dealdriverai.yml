@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - dealdriverai
 
 on:
@@ -43,7 +40,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -68,4 +65,7 @@ jobs:
           app-name: 'dealdriverai'
           slot-name: 'Production'
           package: .
-          
+
+      - name: Set Environment Variable for API_URL
+        run: |
+          az webapp config appsettings set --name dealdriverai --resource-group Emailcopilott_group --settings API_URL=https://salesback.azurewebsites.net/
