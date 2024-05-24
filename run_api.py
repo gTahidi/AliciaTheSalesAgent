@@ -19,7 +19,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 CORS_ORIGINS = ["http://localhost:3000",
                 "http://localhost:3000/undefined/chat", 
                 "http://react-frontend:80",
-                "https://sales-gpt-frontend-git-main-filip-odysseypartns-projects.vercel.app",
+                "https://salesassistant.wonderfulcliff-89c4d9fd.eastus.azurecontainerapps.io",
                 "https://sales-gpt-frontend.vercel.app"]
 CORS_METHODS = ["GET", "POST"]
 
