@@ -1,5 +1,6 @@
 import json
 import os
+import base64
 
 import boto3
 import requests
@@ -13,6 +14,7 @@ from litellm import completion
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from google.oauth2.credentials import Credentials
 
 def setup_knowledge_base(
     product_catalog: str = None, model_name: str = "gpt-3.5-turbo"
@@ -186,40 +188,98 @@ def get_mail_body_subject_from_query(query):
     print(mail_body_subject)
     return mail_body_subject
 
+def fetch_email_thread(service, email):
+    try:
+        threads = service.users().threads().list(userId='me', q=f"from:{email}").execute().get('threads', [])
+        full_conversation = []
+        for thread in threads:
+            tdata = service.users().threads().get(userId='me', id=thread['id']).execute()
+            for message in tdata['messages']:
+                parts = message['payload'].get('parts', [])
+                body = ""
+                for part in parts:
+                    if part['mimeType'] == 'text/plain':
+                        body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
+                full_conversation.append(body)
+                print("Fetched message body:", body)
+        print("Full conversation fetched successfully")
+        return " ".join(full_conversation)
+    except Exception as error:
+        print(f"An error occurred: {error}")
+        return ""
+
+
+def update_email_body(service, recipient_email, body):
+    conversation = fetch_email_thread(service, recipient_email)
+    if not conversation:  # Check if the conversation content is empty
+        return body
+    # Fetch email thread
+    conversation = fetch_email_thread(service, recipient_email)
+
+    # Prepare the prompt for OpenAI
+    prompt = f"""
+    Based on the conversational content: {conversation}, let's update the body "{body}" to be personalized to the user.
+    Return a valid directly parsable json, don't return it within a code snippet or add any kind of explanation. For example:
+    "body": "Dear [Name], we would like to remind you of the upcoming event happening next week. We look forward to seeing you there."
+    """
+    model_name = os.getenv("GPT_MODEL", "gpt-3.5-turbo-1106")
+    # Send prompt to OpenAI
+    response = completion(
+            model=model_name,
+            messages=[{"content": prompt, "role": "user"}],
+            max_tokens=1000,
+            temperature=0.2,
+            stop=['\n']
+        )
+    
+    updated_body = response.choices[0].message.content.strip()
+    print(updated_body)
+    return updated_body
+
+def prepare_and_send_email(email_details):
+    # First, update the body of the email
+    updated_body = update_email_body(email_details['recipient'], email_details['body'], email_details['body'])
+    email_details['body'] = updated_body
+
+    # Now, send the email with the updated body
+    return send_email_with_gmail(email_details)
+
+
 def send_email_with_gmail(email_details):
-    '''.env should include GMAIL_MAIL and GMAIL_APP_PASSWORD to work correctly'''
     try:
         sender_email = os.getenv("GMAIL_MAIL")
         app_password = os.getenv("GMAIL_APP_PASSWORD")
         recipient_email = email_details["recipient"]
         subject = email_details["subject"]
         body = email_details["body"]
-        # Create MIME message
+
+        # Set up the email message
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = recipient_email
         msg['Subject'] = subject
         msg.attach(MIMEText(body, 'plain'))
 
-        # Create server object with SSL option
+        # Connect to Gmail and send the email
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(sender_email, app_password)
-        text = msg.as_string()
-        server.sendmail(sender_email, recipient_email, text)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
         server.quit()
         return "Email sent successfully."
     except Exception as e:
         return f"Email was not sent successfully, error: {e}"
 
+
 def send_email_tool(query):
-    '''Sends an email based on the single query string'''
     email_details = get_mail_body_subject_from_query(query)
-    if isinstance(email_details, str):
-        email_details = json.loads(email_details)  # Ensure it's a dictionary
-    print("EMAIL DETAILS")
-    print(email_details)
-    result = send_email_with_gmail(email_details)
+    if isinstance(email_details, str):  # Ensuring the details are in a usable format
+        email_details = json.loads(email_details)
+    
+    print("Email Details:", email_details)
+    result = prepare_and_send_email(email_details)
     return result
+pass
+
 
 
 def generate_calendly_invitation_link(query):
