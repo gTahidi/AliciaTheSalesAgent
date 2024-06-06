@@ -68,13 +68,14 @@ class SalesGPT(Chain):
     model_name: str = "gpt-4o"  # TODO - make this an env variable
 
     use_tools: bool = False
-    salesperson_name: str = "Ted Lasso"
-    salesperson_role: str = "Business Development Representative"
-    company_name: str = "Sleep Haven"
-    company_business: str = "Sleep Haven is a premium mattress company that provides customers with the most comfortable and supportive sleeping experience possible. We offer a range of high-quality mattresses, pillows, and bedding accessories that are designed to meet the unique needs of our customers."
-    company_values: str = "Our mission at Sleep Haven is to help people achieve a better night's sleep by providing them with the best possible sleep solutions. We believe that quality sleep is essential to overall health and well-being, and we are committed to helping our customers achieve optimal sleep by offering exceptional products and customer service."
-    conversation_purpose: str = "find out whether they are looking to achieve better sleep via buying a premier mattress."
-    conversation_type: str = "call"
+    salesperson_name: str = "Sales Sam"
+    salesperson_role: str = "Sales Copilot"
+    company_name: str = "Growth Partners Kenya"
+    company_business: str = "Growth Partners Kenya is a sales Consultancy firm, that provides sales consulting and coaching for different Enterprises in Kenya and East Africa"
+    company_values: str = "Our mission at Growth Partners is to ensure your business is performing to the optimum. The more you sell, the more we sell."
+    conversation_purpose: str = "find out whether they are looking to more efficiency and profiency in sales."
+    conversation_type: str = "email"
+
 
     def retrieve_conversation_stage(self, key):
         """

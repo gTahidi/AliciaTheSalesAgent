@@ -6,7 +6,7 @@ curl -X POST "http://localhost:8000/chat?stream=true" -H "Content-Type: applicat
 }'
 
 
-curl -X GET "http://localhost:8000/botname"
+curl -X GET "https://turbo-invention-pqvq47q6v462657v-8000.app.github.dev/botname"
 
 
 curl -X GET "http://localhost:8000/"
@@ -19,6 +19,6 @@ curl -X POST http://localhost:8000/chat \
      -H "Content-Type: application/json" \
      -d '{
            "session_id": "session1",
-           "human_say": "Hello, Wo are you and what is ypur company name."
+           "human_say": "Hello, send an Email to daniel@ujaotech.com and tell them about our products and services"
          }'
->>>>>>> 996afcd7071a75141791191656affa4b2df08218
+

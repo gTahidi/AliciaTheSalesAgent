@@ -171,9 +171,9 @@ def generate_stripe_payment_link(query: str) -> str:
 def initialize_email_management():
     toolkit = GmailToolkit()    
     credentials = get_gmail_credentials(
-        token_file="AliciaTheSalesAgent\Management\token.json",  # Update path as needed
-        scopes=["https://mail.google.com/"],
-        client_secrets_file="AliciaTheSalesAgent\Management\credentials.json"  # Update path as needed
+        client_secrets_file = os.getenv("GMAIL_CREDENTIALS_PATH", "credentials.json"),  # Default path as fallback
+        token_file = os.getenv("GMAIL_TOKENS_PATH", "token.json"),  # Update path as needed
+        scopes=["https://mail.google.com/"]  # Update path as needed
     )
     api_resource = build_resource_service(credentials=credentials)
     toolkit = GmailToolkit(api_resource=api_resource)
