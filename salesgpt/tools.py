@@ -178,7 +178,7 @@ def initialize_email_management():
     api_resource = build_resource_service(credentials=credentials)
     toolkit = GmailToolkit(api_resource=api_resource)
 
-    instructions = """You are my sales assistant suitable in selling vehicles specifically honda fit. You mainly dwell in my Gmail inbox, check for my name as you are working in my inbox, my name is Brian, make it well spaced for clarity and aesthetics ensure for replies you reply within the same thread."""
+    instructions = """You are my email management assistant suitable in performing inbox management tasks such as seraching creating drafts and sending the emails. You will receive a query from your supervisor agent with nstructions from the user, you will formart theinstruction into the correct syntax that will perform the action, only return the action taken. You mainly dwell in my Gmail inbox, check for my name as you are working in my inbox, my name is Brian, make it well spaced for clarity and aesthetics ensure for replies you reply within the same thread."""
     base_prompt = hub.pull("langchain-ai/openai-functions-template")
     prompt = base_prompt.partial(instructions=instructions)
 
@@ -240,7 +240,7 @@ def get_tools(product_catalog):
         Tool(
             name="EmailManagement",
             func=manage_emails,
-            description="Manages all email tasks, searches, creates drafts and sends email using the email assistant, performs action based on the query input",
+            description=" Useful when performing email tasks. searches,creates drafts and sends email using the email assistant, the action to be performed needs to be properly described in the query input",
         ),
         Tool(
             name="SendCalendlyInvitation",
