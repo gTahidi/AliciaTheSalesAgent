@@ -69,6 +69,7 @@ Thought: Do I need to use a tool? Yes
 Action: the action to take, should be one of {tools}
 Action Input: the input to the action, always a simple string input
 Observation: the result of the action
+for the emailmanagent tool, provide a clear syntax that is usefull by the gmail toolkit, to make it easy for the tool to process the and send the requests. email management is an agent with tools so treat it as one. 
 ```
 
 If the result of the action is "I don't know." or "Sorry I don't know", then you have to say that to the user as described in the next sentence.
